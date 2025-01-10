@@ -1,8 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import { useAuth } from "./context/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+
+
+  const { isLoggedIn } = useAuth();
+  const router = useRouter();
+
   // Slider States
   const [sliderValue, setSliderValue] = useState(50);
   const [stepValue, setStepValue] = useState(0.01);
@@ -18,6 +25,17 @@ export default function Home() {
   // Search Bar States
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isSearchActivated, setIsSearchActivated] = useState(false);
+
+
+
+  const handleSearch = () => {
+    if (!isLoggedIn) {
+      router.push("/login");
+
+    } else {
+      setIsSearchActivated(true);
+    }
+  };
 
   // Handle for Sliders
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,10 +87,7 @@ export default function Home() {
     );
   };
 
-  // Handle for Search Bar
-  const handleSearch = () => {
-    setIsSearchActivated(true);
-  };
+  
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
