@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 
 
 interface Video {
@@ -40,6 +41,17 @@ export default function SealsPage() {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearch();
+    }
+  };
+
+  const handleThemeToggle = () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    if (currentTheme === "dark") {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("theme", "light");
+    } else {
+      document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("theme", "dark");
     }
   };
 
@@ -92,17 +104,43 @@ export default function SealsPage() {
                     </div>
                   </div>
                   <ul className="space-y-2">
-                    <li>Account Settings</li>
-                    <li>Switch Account</li>
-                    <li>Sign Out</li>
+                    <li>
+                      <Link href="./account-settings">Account Settings</Link>
+                    </li>
+                    <li>
+                      <Link href="./switch-account">Switch Account</Link>
+                    </li>
+                    <li>
+                      <Link href="./sign-out">Sign Out</Link>
+                    </li>
                     <hr />
-                    <li>Learning History</li>
-                    <li>Watchlists</li>
-                    <li>Learnability Statistics</li>
+                    <li>
+                      <Link href="./learning-history">Learning History</Link>
+                    </li>
+                    <li>
+                      <Link href="./watchlists">Watchlists</Link>
+                    </li>
+                    <li>
+                      <Link href="./learnability-statistics">
+                        Learnability Statistics
+                      </Link>
+                    </li>
                     <hr />
-                    <li>Themes (Light/Dark)</li>
-                    <li>Help</li>
-                    <li>Send Feedback</li>
+                    <li>
+                      <a
+                        href="#"
+                        onClick={handleThemeToggle}
+                        className="text-white bg-black px-4 py-2 rounded"
+                      >
+                        Themes (Light/Dark)
+                      </a>
+                    </li>
+                    <li>
+                      <Link href="./help">Help</Link>
+                    </li>
+                    <li>
+                      <Link href="./send-feedback">Send Feedback</Link>
+                    </li>
                   </ul>
                 </div>
               )}
@@ -168,23 +206,44 @@ export default function SealsPage() {
             </div>
 
         {/* Video Results */}
+        
         {isSearchActivated && (
-          <div className="grid grid-cols-1 gap-6 mt-6">
-            {videos.map((video, index) => (
-              <div
-                key={index}
-                className="flex items-start space-x-4 bg-zinc-800 p-4 rounded"
-              >
-                <img
-                  src={`https://img.youtube.com/vi/${video.id}/default.jpg`}
-                  alt={video.title}
-                  className="w-32 h-32 rounded"
-                />
-                <p className="text-sm">{video.title}</p>
+  <div className="grid grid-cols-1 gap-6 mt-6">
+    {videos.map((video, index) => (
+      <div
+        key={index}
+        className="relative flex items-start space-x-4 bg-zinc-800 p-4 rounded"
+      >
+        <div className="absolute top-2 right-2">
+          <div className="relative">
+            <button className="text-white px-2 py-1 rounded hover:bg-zinc-700">
+              Options
+            </button>
+            <div className="absolute right-0 mt-2 w-48 bg-zinc-700 rounded-md shadow-lg">
+              <div className="py-1">
+                <button className="block px-4 py-2 hover:bg-zinc-600 text-white">
+                  Save to Playlist
+                </button>
+                <button className="block px-4 py-2 hover:bg-zinc-600 text-white">
+                  Save to Watch Later
+                </button>
+                <button className="block px-4 py-2 hover:bg-zinc-600 text-white">
+                  Don't Show
+                </button>
               </div>
-            ))}
+            </div>
           </div>
-        )}
+        </div>
+        <img
+          src={`https://img.youtube.com/vi/${video.id}/default.jpg`}
+          alt={video.title}
+          className="w-32 h-32 rounded"
+        />
+        <p className="text-sm">{video.title}</p>
+      </div>
+    ))}
+  </div>
+)}
       </div>
     </div>
   );
