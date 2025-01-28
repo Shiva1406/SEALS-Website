@@ -1,11 +1,12 @@
 import React from 'react'
 import Link from 'next/link';
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "../components/ui/button"
 import { House } from 'lucide-react';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+//import { authOptions } from '@/lib/auth';
 import { signOut } from 'next-auth/react';
 import UserAccountnav from './UserAccountnav';
+import { authOptions } from '../lib/auth';
 
 const Navbar = async() => {
   const session= await getServerSession(authOptions);
