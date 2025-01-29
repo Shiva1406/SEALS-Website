@@ -1,6 +1,6 @@
 //import { authOptions } from "@/lib/auth"
 import { getServerSession } from "next-auth"
-import { authOptions } from "../../../../lib/auth";
+import { authOptions } from "../../../../../../lib/auth";
 
 const page = async () => {
 
