@@ -16,7 +16,8 @@ import { Button } from '../ui/button';
 import Link from 'next/link';
 import {signIn} from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useToast } from "../../hooks/use-toast"
+import { useToast } from "../../hooks/use-toast";
+import GoogleSignInButton from '../GoogleSignInButton';
 
 
 
@@ -104,6 +105,8 @@ const SignInForm = () => {
       <div className='mx-auto my-4 flex w-full items-center justify-evenly before:mr-4 before:block before:h-px before:flex-grow before:bg-stone-400 after:ml-4 after:block after:h-px after:flex-grow after:bg-stone-400'>
         or
       </div>
+      <GoogleSignInButton>Sign In with Google</GoogleSignInButton>
+
        <p className='text-center text-sm text-gray-600 mt-2'>
         If you don&apos;t have an account, please&nbsp;
         <Link className='text-blue-500 hover:underline' href='/sign-up'>
