@@ -58,40 +58,49 @@ export default function SealsPage() {
     setIsSearchActivated(true);
     setLoading(true);
     setError("");
-  
+    
     try {
-      const response = await fetch(
-        `https://shivsri.pythonanywhere.com/search?query=${searchQuery}`
-      );
-  
-      if (!response.ok) throw new Error("Failed to fetch search results");
-  
-      const data = await response.json();
-  
-      console.log("🔍 Full API Response:", JSON.stringify(data, null, 2)); // ✅ Log full response
-  
-      // Check if views, rating, and publishedAt exist in API response
-      if (!Array.isArray(data) || data.length === 0) {
-        throw new Error("No videos found or incorrect response format");
-      }
-  
-      const updatedVideos: Video[] = data.map((video: any) => ({
+        const response = await fetch(
+            `https://shivsri.pythonanywhere.com/search?query=${searchQuery}`
+        );
 
-          id: video.id,
-          title: video.title,
-          views: video.views !== undefined ? Number(video.views) : 0, // Ensure number format
-          rating: video.rating !== undefined ? Number(video.rating) : 0, // Ensure number format
-          publishedAt: video.publishedAt ? new Date(video.publishedAt).toISOString() : "No date found", // Ensure correct date format
+        if (!response.ok) throw new Error("Failed to fetch search results");
+
+        const data = await response.json();
+
+        console.log("🔍 Full API Response:", JSON.stringify(data, null, 2));
+
+        if (!Array.isArray(data) || data.length === 0) {
+            throw new Error("No videos found or incorrect response format");
+        }
+
+        const updatedVideos: Video[] = data.map((video: any) => ({
+            id: video.id,
+            title: video.title,
+            views: video.views !== undefined ? Number(video.views) : 0,
+            rating: video.rating !== undefined ? Number(video.rating) : 0,
+            publishedAt: video.publishedAt ? new Date(video.publishedAt).toISOString() : "No date found",
         }));
-          console.log(updatedVideos);
-      setVideos(updatedVideos);
+
+        console.log(updatedVideos);
+        setVideos(updatedVideos);
+
+        // Store search query and results in localStorage
+        const searchHistory = JSON.parse(localStorage.getItem("learningHistory") || "[]");
+        const newEntry = { query: searchQuery, results: updatedVideos };
+        
+        const updatedHistory = [newEntry, ...searchHistory].slice(0, 5); // Keep last 5 searches
+        localStorage.setItem("learningHistory", JSON.stringify(updatedHistory));
+        
     } catch (error) {
-      console.error("❌ Error fetching videos:", error);
-      setError("Failed to fetch videos. Please try again.");
+        console.error("❌ Error fetching videos:", error);
+        setError("Failed to fetch videos. Please try again.");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
+
   
   const handleSort = (option: string) => {
     setSortOption(option);
