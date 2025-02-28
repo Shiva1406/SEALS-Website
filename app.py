@@ -28,12 +28,30 @@ def search():
             order="relevance"
         ).execute()
 
+        # Extract video IDs from search results
+        video_ids = [item["id"]["videoId"] for item in youtube_response.get("items", [])]
+
+        # Fetch additional video details (views, likes, date)
+        if video_ids:
+            details_response = youtube.videos().list(
+                part="snippet,statistics",
+                id=",".join(video_ids)
+            ).execute()
+        else:
+            details_response = {"items": []}
+
+        # Map video ID to details
+        video_details = {item["id"]: item for item in details_response.get("items", [])}
+
         # Process the results
         videos = [
             {
                 "id": item["id"]["videoId"],
                 "title": item["snippet"]["title"],
-                "thumbnail": item["snippet"]["thumbnails"]["default"]["url"]
+                "thumbnail": item["snippet"]["thumbnails"]["default"]["url"],  # ✅ Fixed missing comma
+                "publishedAt": item["snippet"]["publishedAt"],  # ✅ Fetch upload date
+                "rating": video_details.get(item["id"]["videoId"], {}).get("statistics", {}).get("likeCount", "N/A"),  # ✅ Fetch likes (rating)
+                "views": video_details.get(item["id"]["videoId"], {}).get("statistics", {}).get("viewCount", "N/A"),  # ✅ Fetch views
             }
             for item in youtube_response.get("items", [])
         ]
