@@ -2,13 +2,15 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { FaSun, FaMoon } from "react-icons/fa";
+import AddToPlaylistModal from "./watchlists/AddToPlaylistModal"; // ✅ Correct import
+
 
 interface Video {
   id: string;
   title: string;
-  views: number; 
-  rating: number; 
-  publishedAt: string; 
+  views: number;
+  rating: number;
+  publishedAt: string;
 }
 
 
@@ -22,6 +24,22 @@ export default function SealsPage() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [menuOpen, setMenuOpen] = useState<{ [key: number]: boolean }>({});
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+
+  const addToPlaylist = (video: any, playlistName: string) => {
+    const existingPlaylists = JSON.parse(localStorage.getItem("playlists") || "{}");
+
+    if (!existingPlaylists[playlistName]) {
+        existingPlaylists[playlistName] = [];
+    }
+
+    existingPlaylists[playlistName].push(video);
+
+    localStorage.setItem("playlists", JSON.stringify(existingPlaylists));
+};
+
 
   // Load theme from localStorage
   useEffect(() => {
@@ -58,50 +76,50 @@ export default function SealsPage() {
     setIsSearchActivated(true);
     setLoading(true);
     setError("");
-    
+
     try {
-        const response = await fetch(
-            `https://shivsri.pythonanywhere.com/search?query=${searchQuery}`
-        );
+      const response = await fetch(
+        `https://shivsri.pythonanywhere.com/search?query=${searchQuery}`
+      );
 
-        if (!response.ok) throw new Error("Failed to fetch search results");
+      if (!response.ok) throw new Error("Failed to fetch search results");
 
-        const data = await response.json();
+      const data = await response.json();
 
-        console.log("🔍 Full API Response:", JSON.stringify(data, null, 2));
+      console.log("🔍 Full API Response:", JSON.stringify(data, null, 2));
 
-        if (!Array.isArray(data) || data.length === 0) {
-            throw new Error("No videos found or incorrect response format");
-        }
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error("No videos found or incorrect response format");
+      }
 
-        const updatedVideos: Video[] = data.map((video: any) => ({
-            id: video.id,
-            title: video.title,
-            views: video.views !== undefined ? Number(video.views) : 0,
-            rating: video.rating !== undefined ? Number(video.rating) : 0,
-            publishedAt: video.publishedAt ? new Date(video.publishedAt).toISOString() : "No date found",
-        }));
+      const updatedVideos: Video[] = data.map((video: any) => ({
+        id: video.id,
+        title: video.title,
+        views: video.views !== undefined ? Number(video.views) : 0,
+        rating: video.rating !== undefined ? Number(video.rating) : 0,
+        publishedAt: video.publishedAt ? new Date(video.publishedAt).toISOString() : "No date found",
+      }));
 
-        console.log(updatedVideos);
-        setVideos(updatedVideos);
+      console.log(updatedVideos);
+      setVideos(updatedVideos);
 
-        // Store search query and results in localStorage
-        const searchHistory = JSON.parse(localStorage.getItem("learningHistory") || "[]");
-        const newEntry = { query: searchQuery, results: updatedVideos };
-        
-        const updatedHistory = [newEntry, ...searchHistory].slice(0, 5); // Keep last 5 searches
-        localStorage.setItem("learningHistory", JSON.stringify(updatedHistory));
-        
+      // Store search query and results in localStorage
+      const searchHistory = JSON.parse(localStorage.getItem("learningHistory") || "[]");
+      const newEntry = { query: searchQuery, results: updatedVideos };
+
+      const updatedHistory = [newEntry, ...searchHistory].slice(0, 5); // Keep last 5 searches
+      localStorage.setItem("learningHistory", JSON.stringify(updatedHistory));
+
     } catch (error) {
-        console.error("❌ Error fetching videos:", error);
-        setError("Failed to fetch videos. Please try again.");
+      console.error("❌ Error fetching videos:", error);
+      setError("Failed to fetch videos. Please try again.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
 
-  
+
   const handleSort = (option: string) => {
     setSortOption(option);
 
@@ -124,7 +142,7 @@ export default function SealsPage() {
         break;
 
       case "Newest":
-        sortedVideos.sort((a, b) => 
+        sortedVideos.sort((a, b) =>
           new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
         );
         break;
@@ -139,7 +157,7 @@ export default function SealsPage() {
     console.log("After sorting:", sortedVideos.map(v => v.publishedAt));
 
     setVideos([...sortedVideos]); // Update state to trigger re-render
-};
+  };
 
 
 
@@ -181,62 +199,61 @@ export default function SealsPage() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col p-6">
         {/* Theme Toggle + Profile */}
-        
 
-            {/* Profile Icon */}
-            {/* Profile Menu */}
-            {/* Theme Toggle + Profile */}
-          {isLoggedIn && (
-            <div className="absolute top-4 right-4 flex items-center gap-4">
-              {/* Theme Toggle Switch */}
+
+        {/* Profile Icon */}
+        {/* Profile Menu */}
+        {/* Theme Toggle + Profile */}
+        {isLoggedIn && (
+          <div className="absolute top-4 right-4 flex items-center gap-4">
+            {/* Theme Toggle Switch */}
+            <div
+              className="relative w-14 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center p-1 cursor-pointer transition-all duration-300"
+              onClick={toggleTheme}
+            >
               <div
-                className="relative w-14 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center p-1 cursor-pointer transition-all duration-300"
-                onClick={toggleTheme}
-              >
-                <div
-                  className={`w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center transition-transform duration-300 ${
-                    isDarkMode ? "translate-x-6" : "translate-x-0"
+                className={`w-6 h-6 bg-white rounded-full shadow-md flex items-center justify-center transition-transform duration-300 ${isDarkMode ? "translate-x-6" : "translate-x-0"
                   }`}
-                >
-                  {isDarkMode ? <FaMoon className="text-gray-800" /> : <FaSun className="text-yellow-400" />}
-                </div>
-              </div>
-
-              {/* Profile Icon */}
-              <div className="relative cursor-pointer" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>
-                <div className="w-10 h-10 bg-white text-black flex items-center justify-center rounded-full font-bold">
-                  A
-                </div>
-                {profileMenuOpen && (
-                  <div className={`absolute top-12 right-0 bg-gray-300 text-black rounded shadow-lg p-4 w-64 z-10 ${isDarkMode ? "text-black bg-gray-300" : "text-white bg-black"} `}>
-                    <div className="flex items-center mb-4">
-                      <div className="w-10 h-10 bg-black text-white flex items-center justify-center rounded-full font-bold">
-                        A
-                      </div>
-                      <div className="ml-3">
-                        <p className="font-bold">Alice</p>
-                        <p className="text-sm text-gray-600">alice123@gmail.com</p>
-                      </div>
-                    </div>
-                    <ul className="space-y-2">
-                      <li><Link href="./account-settings">Account Settings</Link></li>
-                      <li><Link href="./switch-account">Switch Account</Link></li>
-                      <li><Link href="./sign-out">Sign Out</Link></li>
-                      <hr />
-                      <li><Link href="./learning-history">Learning History</Link></li>
-                      <li><Link href="./watchlists">Watchlists</Link></li>
-                      <li><Link href="./learnability-statistics">Learnability Statistics</Link></li>
-                      <hr />
-                      <li><Link href="./help">Help</Link></li>
-                      <li><Link href="./send-feedback">Send Feedback</Link></li>
-                    </ul>
-                  </div>
-                )}
+              >
+                {isDarkMode ? <FaMoon className="text-gray-800" /> : <FaSun className="text-yellow-400" />}
               </div>
             </div>
-          )}
-     
-       
+
+            {/* Profile Icon */}
+            <div className="relative cursor-pointer" onClick={() => setProfileMenuOpen(!profileMenuOpen)}>
+              <div className="w-10 h-10 bg-white text-black flex items-center justify-center rounded-full font-bold">
+                A
+              </div>
+              {profileMenuOpen && (
+                <div className={`absolute top-12 right-0 bg-gray-300 text-black rounded shadow-lg p-4 w-64 z-10 ${isDarkMode ? "text-black bg-gray-300" : "text-white bg-black"} `}>
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-black text-white flex items-center justify-center rounded-full font-bold">
+                      A
+                    </div>
+                    <div className="ml-3">
+                      <p className="font-bold">Alice</p>
+                      <p className="text-sm text-gray-600">alice123@gmail.com</p>
+                    </div>
+                  </div>
+                  <ul className="space-y-2">
+                    <li><Link href="./account-settings">Account Settings</Link></li>
+                    <li><Link href="./switch-account">Switch Account</Link></li>
+                    <li><Link href="./sign-out">Sign Out</Link></li>
+                    <hr />
+                    <li><Link href="./learning-history">Learning History</Link></li>
+                    <li><Link href="./watchlists">Watchlists</Link></li>
+                    <li><Link href="./learnability-statistics">Learnability Statistics</Link></li>
+                    <hr />
+                    <li><Link href="./help">Help</Link></li>
+                    <li><Link href="./send-feedback">Send Feedback</Link></li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+
 
         {/* Header */}
         <header className={`flex flex-col items-center justify-center transition-all duration-700 ${isSearchActivated ? "items-start" : "min-h-screen"}`}>
@@ -265,18 +282,69 @@ export default function SealsPage() {
         {/* Video Results */}
         {loading && <p className="mt-6 text-center">Loading...</p>}
         {error && <p className="mt-6 text-center text-red-500">{error}</p>}
-        
+
         {isSearchActivated && !loading && (
           <div className="grid grid-cols-1 gap-6 mt-6">
             {videos.map((video, index) => (
               <div key={index} className={`relative flex items-start space-x-4 ${isDarkMode ? "bg-zinc-800 text-white" : "bg-zinc-200 text-black"} p-4 rounded`}>
-                <img src={`https://img.youtube.com/vi/${video.id}/default.jpg`} alt={video.title} className="w-32 h-32 rounded" />
-                <p className="text-sm">{video.title}</p>
+
+                {/* Video Thumbnail */}
+                <img
+                  src={`https://img.youtube.com/vi/${video.id}/default.jpg`}
+                  alt={video.title}
+                  className="w-32 h-32 rounded"
+                />
+
+                {/* Video Title */}
+                <p className="text-sm flex-1">{video.title}</p>
+
+                {/* Burger Menu */}
+                <div className="relative">
+                  <button className={`p-2 text-xl border rounded-md ${isDarkMode ? "bg-zinc-700 text-white" : "bg-zinc-300 text-black"} hover:${isDarkMode ? "bg-zinc-600" : "bg-zinc-400"}`} onClick={() => setMenuOpen((prev) => ({ ...prev, [index]: !prev[index] }))}>
+                    ☰
+                  </button>
+
+                  {menuOpen[index] && (
+                    <div className={`absolute right-0 top-8 ${isDarkMode ? "bg-zinc-800 text-white" : "bg-white text-black"} shadow-lg rounded w-48`}>
+                      <ul className="flex flex-col p-2">
+                        {/* Watch Later */}
+                        <li className="p-2 hover:bg-gray-200 cursor-pointer" onClick={() => addToPlaylist(video, "Watch Later")}>
+                          Watch Later
+                        </li>
+
+                        {/* Add to Playlist */}
+                        <li
+                className="p-2 hover:bg-gray-200 cursor-pointer"
+                onClick={() => {
+                    setSelectedVideo(video);
+                    setShowPlaylistModal(true);
+                }}
+            >
+                Add to Playlist
+            </li>
+
+                        {/* Don't Show Me This */}
+                        <li className="p-2 text-red-500 hover:bg-gray-200 cursor-pointer" onClick={() =>setVideos(videos.filter((_, i) => i !== index))}>
+                          Don't Show Me This
+                        </li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+      {showPlaylistModal && selectedVideo && (
+    <AddToPlaylistModal
+        video={selectedVideo}
+        onClose={() => setShowPlaylistModal(false)}
+        onAdd={addToPlaylist}
+        isDarkMode={isDarkMode}
+    />
+)}
     </div>
+    
   );
 }
