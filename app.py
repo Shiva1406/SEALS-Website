@@ -31,10 +31,10 @@ def search():
         # Extract video IDs from search results
         video_ids = [item["id"]["videoId"] for item in youtube_response.get("items", [])]
 
-        # Fetch additional video details (views, likes, date)
+        # Fetch additional video details (views, likes, duration)
         if video_ids:
             details_response = youtube.videos().list(
-                part="snippet,statistics",
+                part="snippet,statistics,contentDetails",  # ✅ Added "contentDetails" to get duration
                 id=",".join(video_ids)
             ).execute()
         else:
@@ -48,13 +48,15 @@ def search():
             {
                 "id": item["id"]["videoId"],
                 "title": item["snippet"]["title"],
-                "thumbnail": item["snippet"]["thumbnails"]["default"]["url"],  # ✅ Fixed missing comma
-                "publishedAt": item["snippet"]["publishedAt"],  # ✅ Fetch upload date
-                "rating": video_details.get(item["id"]["videoId"], {}).get("statistics", {}).get("likeCount", "N/A"),  # ✅ Fetch likes (rating)
-                "views": video_details.get(item["id"]["videoId"], {}).get("statistics", {}).get("viewCount", "N/A"),  # ✅ Fetch views
+                "thumbnail": item["snippet"]["thumbnails"]["default"]["url"],
+                "publishedAt": item["snippet"]["publishedAt"],
+                "rating": video_details.get(item["id"]["videoId"], {}).get("statistics", {}).get("likeCount", "N/A"),
+                "views": video_details.get(item["id"]["videoId"], {}).get("statistics", {}).get("viewCount", "N/A"),
+                "duration": video_details.get(item["id"]["videoId"], {}).get("contentDetails", {}).get("duration", "N/A")  # ✅ Fetching duration
             }
             for item in youtube_response.get("items", [])
         ]
+
 
         return jsonify(videos)
 

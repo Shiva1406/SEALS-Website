@@ -53,6 +53,9 @@ a:hover {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+html, body {
+  overflow: auto;
+}
 
 :root {
   --background: #ffffff;
