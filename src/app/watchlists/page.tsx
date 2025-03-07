@@ -36,6 +36,7 @@ const Watchlists = () => {
     if (!selectedPlaylist && !newPlaylist) {
       alert("Please select or create a playlist.");
       return;
+    
     }
   
     const existingPlaylists = JSON.parse(localStorage.getItem("playlists") || "{}");
